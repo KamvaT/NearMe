@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Implementation details: EF Core, SQL Server, and (later) Identity, Blob Storage. -->
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" />
+    <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\NearMe.Application\NearMe.Application.csproj" />
+    <ProjectReference Include="..\NearMe.Domain\NearMe.Domain.csproj" />
+    <ProjectReference Include="..\NearMe.Shared\NearMe.Shared.csproj" />
+  </ItemGroup>
+
+</Project>

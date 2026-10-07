@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Business entities and rules. No infrastructure, HTTP or persistence dependencies. -->
+
+  <ItemGroup>
+    <ProjectReference Include="..\NearMe.Shared\NearMe.Shared.csproj" />
+  </ItemGroup>
+
+</Project>
