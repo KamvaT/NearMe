@@ -1,0 +1,113 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# Least privilege: CI only needs to read the repository.
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+
+jobs:
+  backend:
+    name: Backend (.NET)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: backend
+
+    steps:
+      # Third-party actions are pinned to full commit SHAs (tags can be moved).
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+        with:
+          global-json-file: backend/global.json
+
+      - name: Restore
+        run: dotnet restore NearMe.sln
+
+      - name: Build
+        run: dotnet build NearMe.sln --configuration Release --no-restore
+
+      - name: Unit and API tests
+        run: |
+          dotnet test tests/NearMe.UnitTests/NearMe.UnitTests.csproj --configuration Release --no-build --logger "console;verbosity=normal"
+          dotnet test tests/NearMe.ApiTests/NearMe.ApiTests.csproj --configuration Release --no-build --logger "console;verbosity=normal"
+
+      # Disposable SQL Server for integration tests. The SA password is generated per run and
+      # masked in logs, so no database credential is stored in the repository or secrets.
+      - name: Start SQL Server
+        run: |
+          SA_PASSWORD="Nm1!$(openssl rand -hex 16)"
+          echo "::add-mask::$SA_PASSWORD"
+          docker run --detach --name nearme-sql \
+            --env ACCEPT_EULA=Y --env "MSSQL_SA_PASSWORD=$SA_PASSWORD" \
+            --publish 1433:1433 mcr.microsoft.com/mssql/server:2022-latest
+          for attempt in $(seq 1 30); do
+            if docker exec nearme-sql /opt/mssql-tools18/bin/sqlcmd -C -S localhost -U sa -P "$SA_PASSWORD" -Q "SELECT 1" > /dev/null 2>&1; then
+              echo "SQL Server is ready."
+              break
+            fi
+            if [ "$attempt" -eq 30 ]; then
+              echo "SQL Server did not become ready in time." >&2
+              docker logs nearme-sql >&2
+              exit 1
+            fi
+            sleep 3
+          done
+          echo "NEARME_TEST_SQL_CONNECTION=Server=localhost,1433;Database=NearMe_IntegrationTests;User Id=sa;Password=$SA_PASSWORD;TrustServerCertificate=True;Encrypt=True" >> "$GITHUB_ENV"
+
+      - name: Integration tests (SQL Server)
+        run: dotnet test tests/NearMe.IntegrationTests/NearMe.IntegrationTests.csproj --configuration Release --no-build --logger "console;verbosity=normal"
+
+  frontend:
+    name: Frontend (React)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: frontend
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install
+        run: npm ci
+
+      - name: Audit dependencies
+        run: npm audit --audit-level=high
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Check formatting
+        run: npm run format:check
+
+      - name: Test
+        run: npm test
+
+      - name: Build
+        run: npm run build
+        env:
+          VITE_API_BASE_URL: https://api.nearme.invalid
