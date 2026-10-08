@@ -426,3 +426,26 @@ FodyWeavers.xsd
 
 # Official VS Code C# Dev Kit Extension exclusion
 #*.lscache
+
+# ---------------------------------------------------------------------------
+# NearMe-specific rules
+# ---------------------------------------------------------------------------
+
+# Environment files: only *.example templates are committed. Real values live in
+# user-secrets (backend, local), .env.local (frontend, local) or the deployment platform.
+.env
+.env.*
+!.env.example
+!**/.env.example
+
+# Local-only backend settings overrides (use user-secrets for anything sensitive).
+appsettings.*.local.json
+appsettings.Local.json
+
+# Frontend build and test output
+frontend/dist/
+frontend/coverage/
+
+# Database files from local tooling
+*.mdf
+*.ldf

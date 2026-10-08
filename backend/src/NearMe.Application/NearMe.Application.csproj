@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Use cases, DTOs, validation and abstractions over infrastructure. -->
+
+  <ItemGroup>
+    <ProjectReference Include="..\NearMe.Domain\NearMe.Domain.csproj" />
+    <ProjectReference Include="..\NearMe.Shared\NearMe.Shared.csproj" />
+  </ItemGroup>
+
+</Project>

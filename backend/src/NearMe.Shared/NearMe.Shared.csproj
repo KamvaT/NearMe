@@ -1,0 +1,5 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Cross-cutting primitives only. Must not reference any other NearMe project. -->
+
+</Project>

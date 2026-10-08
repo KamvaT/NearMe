@@ -1,0 +1,21 @@
+@import 'tailwindcss';
+
+/*
+ * Design tokens. Placeholder brand palette until the visual design phase;
+ * brand-700 on white meets WCAG 2.2 AA contrast for normal text.
+ */
+@theme {
+  --color-brand-50: #eef7f6;
+  --color-brand-600: #0f766e;
+  --color-brand-700: #115e59;
+  --color-brand-800: #134e4a;
+
+  --font-sans: system-ui, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+
+@layer base {
+  :focus-visible {
+    outline: 2px solid var(--color-brand-600);
+    outline-offset: 2px;
+  }
+}

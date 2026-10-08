@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <!--
+    HTTP concerns only. The reference to Infrastructure exists so the composition root can
+    compose dependency injection (see docs/adr/0002). Controllers must not use Infrastructure
+    types; this is enforced by NearMe.UnitTests/Architecture.
+    Infrastructure is used only in composition code (Program.cs, DI and endpoint wiring).
+  -->
+
+  <PropertyGroup>
+    <UserSecretsId>nearme-api-3f1c9a52-6d0e-4b7a-9c2e-8a4d1f7b0e61</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\NearMe.Application\NearMe.Application.csproj" />
+    <ProjectReference Include="..\NearMe.Infrastructure\NearMe.Infrastructure.csproj" />
+    <ProjectReference Include="..\NearMe.Shared\NearMe.Shared.csproj" />
+  </ItemGroup>
+
+</Project>
